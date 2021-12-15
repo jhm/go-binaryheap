@@ -3,7 +3,7 @@
 A slice backed binary heap where the order can be customized by a comparison
 function. The main branch now requires go 1.18 because the heap makes use of
 generic type parameters. For a version that works on Go 1.17 and below see the
-v1.0 tag.
+v1.0.0 tag.
 
 ## Usage
 
