@@ -1,33 +1,34 @@
 package binaryheap
 
 import (
+	"constraints"
 	"math/rand"
 	"sort"
 	"testing"
 	"time"
 )
 
-func cmp(a, b interface{}) bool {
-	return a.(int) > b.(int)
+func cmp[T constraints.Ordered](a, b T) bool {
+	return a > b
 }
 
-func elements() []interface{} {
+func elements() []int {
 	rand.Seed(time.Now().UnixNano())
-	result := make([]interface{}, rand.Intn(19)+1)
+	result := make([]int, rand.Intn(19)+1)
 	for i := range result {
 		result[i] = rand.Intn(100)
 	}
 	return result
 }
 
-func validate(t *testing.T, h *BinaryHeap, i int) {
+func validate(t *testing.T, h *BinaryHeap[int], i int) {
 	t.Helper()
 	l := left(i)
 	validateChildren(t, h, i, l)
 	validateChildren(t, h, i, l+1)
 }
 
-func validateChildren(t *testing.T, h *BinaryHeap, p int, c int) {
+func validateChildren(t *testing.T, h *BinaryHeap[int], p int, c int) {
 	t.Helper()
 	if c < h.Len() {
 		if h.cmp(h.heap[c], h.heap[p]) {
@@ -39,7 +40,7 @@ func validateChildren(t *testing.T, h *BinaryHeap, p int, c int) {
 }
 
 func TestIsEmpty(t *testing.T) {
-	h := New(cmp)
+	h := New(cmp[int])
 	if !h.IsEmpty() {
 		t.Fatalf("IsEmpty returned false on an empty heap")
 	}
@@ -50,46 +51,46 @@ func TestIsEmpty(t *testing.T) {
 }
 
 func TestEmptyPeek(t *testing.T) {
-	h := New(cmp)
-	if got := h.Peek(); got != nil {
-		t.Errorf("Peek returned %v expected nil", got)
+	h := New(cmp[int])
+	if got, ok := h.Peek(); ok || got != 0 {
+		t.Errorf("Peek on empty heap\n got: (%v, %t)\nwant: (0, false)", got, ok)
 	}
 }
 
 func TestEmptyPop(t *testing.T) {
-	h := New(cmp)
-	if got := h.Pop(); got != nil {
-		t.Errorf("Pop returned %v expected nil", got)
+	h := New(cmp[int])
+	if got, ok := h.Pop(); ok || got != 0 {
+		t.Errorf("Pop on empty heap\n got: (%v, %t)\nwant: (0, false)", got, ok)
 	}
 }
 
 func TestLen(t *testing.T) {
 	xs := elements()
-	h := NewWithElements(cmp, xs...)
+	h := NewWithElements(cmp[int], xs...)
 	want := len(xs)
 	if got := h.Len(); got != want {
-		t.Errorf("Len returned wrong output\n got: %d\nwant: %d", got, want)
+		t.Errorf("Len\n got: %d\nwant: %d", got, want)
 	}
 }
 
 func TestPeekAndPop(t *testing.T) {
 	xs := elements()
-	h := NewWithElements(cmp, xs...)
-	sort.Slice(xs, func(i, j int) bool { return xs[i].(int) > xs[j].(int) })
+	h := NewWithElements(cmp[int], xs...)
+	sort.Slice(xs, func(i, j int) bool { return xs[i] > xs[j] })
 
 	for _, want := range xs {
-		if got := h.Peek().(int); got != want {
-			t.Errorf("Peek returned wrong output\n got: %d\nwant: %d", got, want)
+		if got, ok := h.Peek(); !ok || got != want {
+			t.Errorf("Peek\n got: (%d, %t)\nwant: (%d, true)", got, ok, want)
 		}
-		if got := h.Pop().(int); got != want {
-			t.Fatalf("Pop returned wrong output\n got: %d\nwant: %d", got, want)
+		if got, ok := h.Pop(); !ok || got != want {
+			t.Fatalf("Pop\n got: (%d, %t)\nwant: (%d, true)", got, ok, want)
 		}
 		validate(t, h, 0)
 	}
 }
 
 func TestPush(t *testing.T) {
-	h := New(cmp)
+	h := New(cmp[int])
 	for _, n := range elements() {
 		h.Push(n)
 		validate(t, h, 0)
@@ -97,7 +98,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushAll(t *testing.T) {
-	h := New(cmp)
-	h.PushAll(elements())
+	h := New(cmp[int])
+	h.PushAll(elements()...)
 	validate(t, h, 0)
 }

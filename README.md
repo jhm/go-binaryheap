@@ -1,13 +1,15 @@
-# go-binaryheap [![Actions Status](https://github.com/jhm/go-binaryheap/workflows/Main/badge.svg)](https://github.com/jhm/go-binaryheap/actions)
+# go-binaryheap
 
 A slice backed binary heap where the order can be customized by a comparison
-function.
+function. The main branch now requires go 1.18 because the heap makes use of
+generic type parameters. For a version that works on Go 1.17 and below see the
+v1.0 tag.
 
 ## Usage
 
 ```golang
 // Construct a new max heap containing ints.
-h := binaryheap.New(func(a, b interface{}) bool { return a.(int) > b.(int) })
+h := binaryheap.New(func(a, b int) bool { return a > b })
 
 // Add an int to the heap.
 h.Push(1)
@@ -16,13 +18,12 @@ h.Push(1)
 h.PushAll(2, 3)
 
 // Retrieve the top item.
-a := h.Peek()
+a, found := h.Peek()
 
 // Retrieve the top item and remove it from the heap.
-b := h.Pop()
+b, found := h.Pop()
 ```
 
 ## Future Changes
 
-Upon the release of Go 1.18 the heap, and its API, will make use of generic type
-parameters and the tests will most likely be updated to use the new fuzzing API.
+The tests will most likely be updated to use the new fuzzing API released in Go 1.18.
